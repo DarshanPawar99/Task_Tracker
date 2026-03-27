@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import html
 import uuid
 from datetime import date, datetime
+from textwrap import dedent
 
 import pandas as pd
 import streamlit as st
@@ -98,83 +100,85 @@ def clear_task_cache() -> None:
     load_tasks_cached.clear()
 
 
+def render_html(content: str) -> None:
+    st.markdown(dedent(content).strip(), unsafe_allow_html=True)
+
+
 def inject_css() -> None:
-    st.markdown(
-        """
-        <style>
-        .stApp {
-            background: #f6f7fb;
-        }
-        .block-container {
-            padding-top: 1.2rem;
-            padding-bottom: 2rem;
-            max-width: 1200px;
-        }
-        .hero-card {
-            background: white;
-            border-radius: 18px;
-            padding: 20px 22px;
-            box-shadow: 0 8px 24px rgba(20, 20, 43, 0.06);
-            margin-bottom: 18px;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 14px;
-            padding: 16px 18px;
-            box-shadow: 0 2px 8px rgba(20, 20, 43, 0.05);
-            border-left: 4px solid #667eea;
-        }
-        .task-card {
-            background: white;
-            border-radius: 16px;
-            padding: 16px 18px;
-            box-shadow: 0 4px 16px rgba(20, 20, 43, 0.05);
-            margin-bottom: 12px;
-            border: 1px solid #f0f0f5;
-        }
-        .task-name {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-        .task-notes {
-            color: #8a8fa3;
-            font-size: 0.83rem;
-            line-height: 1.45;
-            margin-bottom: 10px;
-        }
-        .meta-row {
-            color: #7b8194;
-            font-size: 0.82rem;
-            line-height: 1.5;
-        }
-        .pill {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            margin-right: 6px;
-            margin-bottom: 6px;
-        }
-        .empty-state {
-            background: white;
-            border: 1.5px dashed #d9dde7;
-            border-radius: 18px;
-            padding: 52px 18px;
-            text-align: center;
-            color: #9aa1b2;
-            box-shadow: 0 4px 16px rgba(20, 20, 43, 0.03);
-        }
-        .small-muted {
-            color: #8f96a8;
-            font-size: 0.85rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    render_html("""
+    <style>
+    .stApp {
+        background: #f6f7fb;
+    }
+    .block-container {
+        padding-top: 1.2rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
+    }
+    .hero-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px 22px;
+        box-shadow: 0 8px 24px rgba(20, 20, 43, 0.06);
+        margin-bottom: 18px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 18px;
+        box-shadow: 0 2px 8px rgba(20, 20, 43, 0.05);
+        border-left: 4px solid #667eea;
+    }
+    .task-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px 18px;
+        box-shadow: 0 4px 16px rgba(20, 20, 43, 0.05);
+        margin-bottom: 12px;
+        border: 1px solid #f0f0f5;
+    }
+    .task-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 4px;
+    }
+    .task-notes {
+        color: #8a8fa3;
+        font-size: 0.83rem;
+        line-height: 1.45;
+        margin-bottom: 10px;
+        white-space: pre-wrap;
+    }
+    .meta-row {
+        color: #7b8194;
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+    .pill {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        margin-right: 6px;
+        margin-bottom: 6px;
+    }
+    .empty-state {
+        background: white;
+        border: 1.5px dashed #d9dde7;
+        border-radius: 18px;
+        padding: 52px 18px;
+        text-align: center;
+        color: #9aa1b2;
+        box-shadow: 0 4px 16px rgba(20, 20, 43, 0.03);
+    }
+    .small-muted {
+        color: #8f96a8;
+        font-size: 0.85rem;
+    }
+    </style>
+    """)
 
 
 def parse_date(value: str | None):
@@ -315,24 +319,22 @@ def get_stats(tasks: list[dict]) -> dict:
 
 
 def pill(label: str, bg: str, color: str) -> str:
-    return f'<span class="pill" style="background:{bg};color:{color};">{label}</span>'
+    safe_label = html.escape(label)
+    return f'<span class="pill" style="background:{bg};color:{color};">{safe_label}</span>'
 
 
 def render_header() -> None:
     today_text = date.today().strftime("%A, %d %B %Y")
     col1, col2 = st.columns([4, 1.4])
     with col1:
-        st.markdown(
-            f"""
-            <div class="hero-card">
-                <div style="font-size: 2rem; font-weight: 800; color: #1a1a2e; margin-bottom: 4px;">Task Tracker ✦</div>
-                <div class="small-muted">{today_text}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        render_html(f"""
+        <div class="hero-card">
+            <div style="font-size: 2rem; font-weight: 800; color: #1a1a2e; margin-bottom: 4px;">Task Tracker ✦</div>
+            <div class="small-muted">{html.escape(today_text)}</div>
+        </div>
+        """)
     with col2:
-        st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+        render_html("<div style='height: 18px;'></div>")
         if st.button("↻ Refresh", use_container_width=True):
             clear_task_cache()
             st.rerun()
@@ -366,15 +368,12 @@ def render_stats(tasks: list[dict]) -> None:
     ]
     for col, (label, value) in zip(cols, items):
         with col:
-            st.markdown(
-                f"""
-                <div class="stat-card" style="border-left-color:{colors[label]}">
-                    <div style="font-size:1.7rem;font-weight:800;color:{colors[label]};line-height:1;">{value}</div>
-                    <div style="font-size:0.82rem;color:#8f96a8;margin-top:6px;font-weight:600;">{label}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            render_html(f"""
+            <div class="stat-card" style="border-left-color:{colors[label]}">
+                <div style="font-size:1.7rem;font-weight:800;color:{colors[label]};line-height:1;">{value}</div>
+                <div style="font-size:0.82rem;color:#8f96a8;margin-top:6px;font-weight:600;">{html.escape(label)}</div>
+            </div>
+            """)
 
 
 def render_filters() -> None:
@@ -488,15 +487,12 @@ def render_tasks(tasks: list[dict]) -> None:
 
     if not processed:
         message = "No tasks yet — add your first one!" if not tasks else "No tasks match your current filters."
-        st.markdown(
-            f"""
-            <div class="empty-state">
-                <div style="font-size: 2.2rem; margin-bottom: 10px;">📋</div>
-                <div style="font-size: 1rem; font-weight: 700;">{message}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        render_html(f"""
+        <div class="empty-state">
+            <div style="font-size: 2.2rem; margin-bottom: 10px;">📋</div>
+            <div style="font-size: 1rem; font-weight: 700;">{html.escape(message)}</div>
+        </div>
+        """)
         return
 
     for task in processed:
@@ -505,40 +501,40 @@ def render_tasks(tasks: list[dict]) -> None:
         intensity_bg, intensity_text, _ = INTENSITY_COLORS[task["intensity"]]
         urgency_bg, urgency_text = URGENCY_STYLE[derived["urgency"]]
 
+        safe_name = html.escape(task["name"])
+        safe_notes = html.escape(task.get("notes", ""))
+        notes_html = f'<div class="task-notes">{safe_notes}</div>' if safe_notes else ""
+
+        meta_parts = []
+        if task.get("receivedDate"):
+            meta_parts.append(f"📥 Received: <b>{html.escape(format_date(task['receivedDate']))}</b>")
+        if task.get("dueDate"):
+            due_color = "#c62828" if derived["urgency"] == "Overdue" else "#555"
+            meta_parts.append(f"📅 Due: <b style='color:{due_color}'>{html.escape(format_date(task['dueDate']))}</b>")
+        if task.get("submittedDate"):
+            meta_parts.append(f"✅ Submitted: <b style='color:#2e7d32'>{html.escape(format_date(task['submittedDate']))}</b>")
+        if derived["daysLeft"] is not None and task["status"] != "Completed":
+            if derived["daysLeft"] < 0:
+                meta_parts.append(f"⏳ <span style='color:#c62828'>{abs(derived['daysLeft'])}d overdue</span>")
+            else:
+                meta_parts.append(f"⏳ {derived['daysLeft']}d left")
+        if derived["turnaround"] is not None:
+            meta_parts.append(f"⚡ Turnaround: <b style='color:#667eea'>{derived['turnaround']}d</b>")
+
         left, right = st.columns([5, 2.2], vertical_alignment="top")
         with left:
-            notes_html = f'<div class="task-notes">{task["notes"]}</div>' if task.get("notes") else ""
-            meta_parts = []
-            if task.get("receivedDate"):
-                meta_parts.append(f"📥 Received: <b>{format_date(task['receivedDate'])}</b>")
-            if task.get("dueDate"):
-                due_color = "#c62828" if derived["urgency"] == "Overdue" else "#555"
-                meta_parts.append(f"📅 Due: <b style='color:{due_color}'>{format_date(task['dueDate'])}</b>")
-            if task.get("submittedDate"):
-                meta_parts.append(f"✅ Submitted: <b style='color:#2e7d32'>{format_date(task['submittedDate'])}</b>")
-            if derived["daysLeft"] is not None and task["status"] != "Completed":
-                if derived["daysLeft"] < 0:
-                    meta_parts.append(f"⏳ <span style='color:#c62828'>{abs(derived['daysLeft'])}d overdue</span>")
-                else:
-                    meta_parts.append(f"⏳ {derived['daysLeft']}d left")
-            if derived["turnaround"] is not None:
-                meta_parts.append(f"⚡ Turnaround: <b style='color:#667eea'>{derived['turnaround']}d</b>")
-
-            st.markdown(
-                f"""
-                <div class="task-card">
-                    <div class="task-name">{task['name']}</div>
-                    {notes_html}
-                    <div style="margin-bottom:8px;">
-                        {pill(task['status'], status_bg, status_text)}
-                        {pill(task['intensity'], intensity_bg, intensity_text)}
-                        {pill(task['derived']['urgency'], urgency_bg, urgency_text)}
-                    </div>
-                    <div class="meta-row">{' &nbsp;&nbsp;•&nbsp;&nbsp; '.join(meta_parts)}</div>
+            render_html(f"""
+            <div class="task-card">
+                <div class="task-name">{safe_name}</div>
+                {notes_html}
+                <div style="margin-bottom:8px;">
+                    {pill(task['status'], status_bg, status_text)}
+                    {pill(task['intensity'], intensity_bg, intensity_text)}
+                    {pill(task['derived']['urgency'], urgency_bg, urgency_text)}
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                <div class="meta-row">{' &nbsp;&nbsp;•&nbsp;&nbsp; '.join(meta_parts)}</div>
+            </div>
+            """)
 
         with right:
             with st.container(border=True):
