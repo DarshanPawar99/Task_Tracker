@@ -101,7 +101,7 @@ def clear_task_cache() -> None:
 
 
 def render_html(content: str) -> None:
-    st.markdown(dedent(content).strip(), unsafe_allow_html=True)
+    st.html(dedent(content).strip())
 
 
 def inject_css() -> None:
